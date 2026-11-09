@@ -24,82 +24,119 @@ import natacion.*
 describe "natacion" {
 
 
-  //const debi = una docente básica que no es guardavida
-  //const isa = un docente básico que sí es guardavida
-  //const nico = un docente dedicado al estilo pecho que no es guardavida
-  //const mara = una docente externa que no es guardavida y acepta hasta 2 estudiantes menores de 13 años por curso
+  const debi = new Basico(esGuardavida = false)
+  const isa = new Basico(esGuardavida = true)
+  const nico = new Dedicado(esGuardavida = false, estilo = pecho)
+  const mara = new Externo(esGuardavida = false, cupoDeMenores = 2)
 
-  //const milena = Una estudiante de edad 10 que domina los estilos croll y pecho
-  //const rodrigo = Un estudiante de edad 9 domina los estilos mariposa y pecho
-  //const matilda = Un estudiante de edad 9 que domina los estilos croll y pecho
-  //const elias = Un estudiante de edad 15 que no domina ningún estilo
-  //const camilo = Un estudiante de edad 16 que domina los estilos croll, pecho y espalda
-  //const juana = Una estudiante de edad 16 que domina el estilo croll
+  const milena = new Estudiante(estilos = [crol, pecho], edad = 10)
+  const rodrigo = new Estudiante(estilos = [mariposa, pecho], edad = 9) 
+  const matilda = new Estudiante(estilos = [crol, pecho], edad = 9)
+  const elias = new Estudiante(estilos = [], edad = 15) 
+  const camilo = new Estudiante(estilos = [crol, pecho, espalda], edad = 16) 
+  const juana = new Estudiante(estilos = [crol], edad = 16) 
 
-  // const martes = Un curso base que tiene a debi como docente, el cupo máximo es 3 y tiene como inscriptos a milena y rodrigo
-  // const jueves = Un curso base que tiene a isa como docente, el cupo máximo es 3 y tiene inscriptos a milena y rodrigo
-  // const viernes = Un curso base que tiene a nico como docente, el cupo máximo es 3 y tiene inscripto a milena y rodrigo
-  // const colonia = Un curso escuela de niños que tiene a debi como docente, el cupo máximo es 3 y tiene inscriptos a milena y rodrigo
-  // const rehabilitacion = un curso terapéutico que tiene a mara como docente, el cupo máximo es 4, y tiene inscriptos a milena y camilo. Para el punto 2, la recaudacion bruta es de 300
-
-  //const toninas = Es una escuela que tiene 1000 de dinero guardado y dicta los cursos martes, jueves, viernes, colonia y rehabilitacion
+  const martes = new Base(docente = debi, cupoMaximo = 3, inscriptos = #{milena, rodrigo})
+  const jueves = new Base(docente = isa, cupoMaximo = 3,  inscriptos = #{milena, rodrigo}) 
+  const viernes = new Base(docente = nico, cupoMaximo = 3, inscriptos = #{milena,rodrigo})
+  const colonia = new EscuelaDeNinios(docente = debi, cupoMaximo = 3, inscriptos = #{milena,rodrigo})
+  const rehabilitacion = new Terapeutico(docente = mara, cupoMaximo = 4, inscriptos = #{milena,camilo}, recaudacionBruta = 300)
+  const toninas = new Escuela(dinero = 1000, cursos = #{martes, jueves, viernes, colonia, rehabilitacion}) 
+  
 
   test "1. a. curso basico (no guardavida)" {
-      assert.that(true)    
-  //     //- milena no puede inscribirse al curso de los martes (porque ya está inscripta)
+   //    //- milena no puede inscribirse al curso de los martes (porque ya está inscripta)
+            assert.notThat(martes.puedeInscribirse(milena))
   //     //- En cambio, matilda sí se puede inscribir a los cursos de los martes
+     assert.that(martes.puedeInscribirse(matilda))
   //     //- camilo también se puede inscribir al curso de los martes
-  //     //- Pero Elías no se puede inscribir al curso de los martes (porque no sabe ningún estilo y debi no es guardavida)
+  assert.that(martes.puedeInscribirse(camilo))
 
+  //     //- Pero Elías no se puede inscribir al curso de los martes (porque no sabe ningún estilo y debi no es guardavida)
+        assert.notThat(martes.puedeInscribirse(elias))
   //     //-Al intentar inscribir a elias en el curso de los martes estamos en un problema, porque no se debería permitir
+  assert.throwsException({martes.inscribir(elias)})
   //     //-Inscribir a matilda en el curso de los martes (no ocurre ningún problema)
+  martes.inscribir(matilda)
   //     //-Luego de haber incripto a matilda, los nuevos inscriptos del curso de los martes son milena, rodrigo y matilda
+  assert.equals(#{milena, rodrigo, matilda}, martes.inscriptos())
   //     //-Como ahora se completó el curso, camilo ya no puede ser inscripto. 
+  assert.notThat(martes.puedeInscribirse(camilo))
   }
 
-  // test "1. b. curso basico (guardavida)" {
+ test "1. b. curso basico (guardavida)" {
   //     // - En el curso de los jueves sí se puede inscribir elias (no sabe ningún estilo pero isa es guardavida)
+  assert.that(jueves.puedeInscribirse(elias))
   //     // - Luego de incribir a elías en el curso de los jueves, los inscriptos de dicho curso son milena, rodrigo y elias 
-  // }
+  jueves.inscribir(elias)
+  assert.equals(#{milena, rodrigo, elias}, jueves.inscriptos())
+   }
 
-  // test "1.c. curso basico docente dedicado" {
+  test "1.c. curso basico docente dedicado" {
   //     // - En el curso de los viernes no se pude inscribir a milena (ya está inscripta)
+  assert.notThat(viernes.puedeInscribirse(milena))
   //     // - Pero matilda sí puede ser inscripta en el curso de los viernes
+  assert.that(viernes.puedeInscribirse(matilda))
   //     // - Camilo también puede ser inscripto en el curso de los viernes
+   assert.that(viernes.puedeInscribirse(camilo))
   //     // - Quien no puede ser inscripta en el curso de los viernes es juana (porque no domina el estilo pecho)
+   assert.notThat(viernes.puedeInscribirse(juana))
   //     // - Por lo tanto si se intenta inscribir a juana en el curso de los viernes estamos en un problema
+   assert.throwsException({viernes.inscribir(juana)})
   //     // - Al inscribir a matilda en el curso de los viernes, los nuevos inscriptos de ese curso son milena, rodrigo y matilda
+    viernes.inscribir(matilda)
+    assert.equals(#{milena, rodrigo, matilda}, viernes.inscriptos())
   //     // - Ahora camilo ya no puede ser inscripto (se completo el cupo)
+   assert.notThat(viernes.puedeInscribirse(camilo))
+
   //     // - Si intentás  inscribir a camilo estamos en un problema, porque no se puede
-  // }
+  assert.throwsException({viernes.inscribir(camilo)})
+   }
 
-//   test "1.d. escuela de niños" {
+   test "1.d. escuela de niños" {
 //       // milena no se puede inscribir en la colonia (ya está inscripta)
+assert.notThat(colonia.puedeInscribirse(milena))
 //       // matilda sí se puede inscribir en la colonia 
+  assert.that(colonia.puedeInscribirse(matilda))
 //       // camilo no se puede inscribi en la colonia (es muy grande)
+ assert.notThat(colonia.puedeInscribirse(camilo))
 //       // elias no se puede inscribir en la colonia (no sabe ningún estilo y debi no es guardavida)
+assert.notThat(colonia.puedeInscribirse(elias))
 //       // Se intenta inscribir a camilo a la colonia, pero estamos en un problema porque no se puede!
+ assert.throwsException({colonia.inscribir(camilo)})
 //       // Se intenta inscribir a elias a la colonia, pero estamos en un problema porque no se puede!
+assert.throwsException({colonia.inscribir(elias)})
 //       // Se inscribe a matilda a la colonia sin problema
+ colonia.inscribir(matilda)
 //       // Los inscriptos a la colonia ahora son milena, rodrigo y matilda
+assert.equals(#{milena, rodrigo, matilda}, colonia.inscriptos())
 
-//  }
+ }
 
-  // test "1.e terapeutico (docente externo)" {
+   test "1.e terapeutico (docente externo)" {
   //     // milena no se puede inscribir a la rehabilitacion (ya está inscripta)
+  assert.notThat(rehabilitacion.puedeInscribirse(milena))
   //     // juana no se puede inscribir a la rehabilitación (no domina ningún estilo relajante)
+  assert.notThat(rehabilitacion.puedeInscribirse(juana))
   //     // matilda sí se puede inscribir a la rehabilitación 
+  assert.that(rehabilitacion.puedeInscribirse(matilda))
   //     // rodrigo sí se puede inscribir a la rehabilitación 
+  assert.that(rehabilitacion.puedeInscribirse(rodrigo))
   //     // inscribir a matilda a la rehabilitación (se puede sin problemas)
+  rehabilitacion.inscribir(matilda)
   //     // Ahora si se intenta inscribir a rodrigo estaríamos en un problema porque se llegó al límite de menores de 13 que acepta mara
+  assert.throwsException({rehabilitacion.inscribir(rodrigo)})
   //     // Los inscriptos a la rehabilitación son milena, camilo y matilda
-  // }
+  assert.equals(#{milena,camilo,matilda}, rehabilitacion.inscriptos())
+   }
 
   //punto 2
 
-  // test "2.1 recaudacion" {
+  test "2.1 recaudacion" {
 
   //   // Asegurarse que la reacudación de los martes y la de los jueves es 7.9        
+     assert.equals(7.9, martes.recaudacion())
+    assert.equals(7.9, jueves.recaudacion())
   //   // Si las cuentas no te dan, estos son los parciales:
   //   //  por milena = 20 - 2 - 2 = 16
   //   //  por rodrigo = rodrigo =  20 - 2 -3 =  15
@@ -109,6 +146,7 @@ describe "natacion" {
   
 
   //   // Asegurarse que la recaudación del curso de los viernes es 6.35
+   assert.equals(6.35, viernes.recaudacion())
   //   // Si las cuentas no te dan, éstos son los parciales:
   //   //  por milena = 20 - 2 - 2 = 16
   //   //  por rodrigo =  20 - 2 -3 =  15
@@ -118,6 +156,7 @@ describe "natacion" {
     
     
   //   // Asegurarse que la recaudación del curso colonia 457.9
+   assert.equals(457.9, colonia.recaudacion())
   //   // Si las cuentas no te dan, éstos son los parciales:
   //   //  por milena = 20 - 2 - 2 = 16
   //   //  por rodrigo = rodrigo =  20 - 2 -3 =  15
@@ -126,6 +165,7 @@ describe "natacion" {
   //   //  total = 531 - 73.1 = 447.9
     
   //   // Asegurarse que la recaudación de la rehabilitación es 244
+  assert.equals(244, rehabilitacion.recaudacion())
   //   // Si las cuentas no te dan, éstoso son los parciales:
   //   //  bruta = 300
   //   //  mara = 20 + 300 * 0.1 + 3 * 2 = 20 + 30 + 6 = 56
@@ -133,24 +173,33 @@ describe "natacion" {
     
 
   //   // Asegurarse que la recaudación de la escuela toninas es 724.05
+  assert.equals(724.05, toninas.recaudacion())
   //   // Si las cuentas no te dan, acá están los valores:
   //   //   7.9 + 7.9 + 6.35 + 457.9 + 244 = 724.05
     
   //   // - cobrar la recaudación mensual de la escuela toninas
+     toninas.cobrarRecaudacion()
+    assert.equals(1724.05, toninas.dinero())
   //   // - el total de dinero guardado en la escuela es 1724.05
     
   //   // - cobrar nuevamente la recaudación mensual de la escuela toninas
+   toninas.cobrarRecaudacion()
+    assert.equals(2448.1, toninas.dinero())
   //   // - el total de dinero guardado en la escuela es ahora 2448.1
     
-  // }
+ }
 
 //punto 3
-  // test "3 consultas" {
+   test "3 consultas" {
   //   // Buscar un curso con el estilo espalda en la escuela toninas: La única opción posible es rehabilitación
+  assert.equals(rehabilitacion, toninas.cursoConEstilo(espalda))
   //   // Inscribir a camilo en el curso de los viernes
+  viernes.inscribir(camilo)
   //   // Los cursos infantiles de la escuela toninas son martes, jueves y colonia
+    assert.equals(#{martes, jueves, colonia}, toninas.cursosInfantiles())
   //   // Los docentes de los cursos infantiles de la escuela toninas son debi e isa    
-  // }
+  assert.equals(#{debi, isa}, toninas.docentesInfantiles())
+   }
 
 
 }
